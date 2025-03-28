@@ -1,0 +1,31 @@
+<div class="modal fade" id="medicalHistoryModal" tabindex="-1" aria-labelledby="medicalHistoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="medicalHistoryModalLabel">Medical History & Allergies</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="medicalHistoryForm" method="POST" action="{{ url_for('update_medical_info') }}">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        <label for="past_medications" class="form-label">Past Medications</label>
+                        <textarea name="past_medications" class="form-control">{{ user.past_medications }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="allergies" class="form-label">Allergies</label>
+                        <textarea name="allergies" class="form-control">{{ user.allergies }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="medical_conditions" class="form-label">Medical Conditions</label>
+                        <textarea name="medical_conditions" class="form-control">{{ user.medical_conditions }}</textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

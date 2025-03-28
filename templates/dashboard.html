@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --secondary: #2196F3;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --sidebar-bg: #ffffff;
+            --sidebar-width: 500px;
+            --border-radius: 12px;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        .dark-mode {
+            --primary: #4CAF50;
+            --secondary: #2196F3;
+            --light: #343a40;
+            --dark: #f8f9fa;
+            --sidebar-bg: #2c3e50;
+            --card-bg: #495057;
+            --text-color: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: calc(-1 * var(--sidebar-width));
+            background-color: var(--sidebar-bg);
+            color: var(--text-color);
+            padding: 20px;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.open {
+            transform: translateX(var(--sidebar-width));
+        }
+
+        .sidebar h4 {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            flex-grow: 1;
+        }
+
+        .sidebar ul li {
+            margin: 15px 0;
+        }
+
+        .sidebar ul li a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: block;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .sidebar ul li a.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            font-weight: bold;
+        }
+
+        .sidebar img {
+            width: 100%;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar img:hover {
+            opacity: 1;
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: 20px;
+            transition: margin 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .main-content.sidebar-open {
+            margin-left: var(--sidebar-width);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .toggle-sidebar {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-sidebar:hover {
+            background: #3e8e41;
+        }
+
+        .toggle-sidebar.sidebar-open {
+            left: calc(var(--sidebar-width) + 20px);
+        }
+
+        .dark-mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .dark-mode-toggle:hover {
+            background: #0b7dda;
+        }
+
+        .welcome-section {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 30px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .welcome-section img {
+            flex: 1 1 300px;
+            max-width: 100%;
+            border-radius: var(--border-radius);
+        }
+
+        .welcome-content {
+            flex: 1 1 300px;
+            min-width: 300px;
+        }
+
+        .welcome-content h1 {
+            font-size: 2.0rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .welcome-content p {
+            font-size: 1.2rem;
+            color: var(--text-color);
+        }
+
+        .symptom-input,
+        .result-section,
+        .profile-section,
+        .update-profile-section,
+        .update-medical-info-section,
+        .feedback-section,
+        .about-us-section {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 30px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-item {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: var(--border-radius);
+            transition: background 0.3s ease;
+        }
+
+        .result-item h4 {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .result-item p {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+
+        .workout-recommendations {
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .workout-recommendations h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .workout-recommendations ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+
+        .workout-recommendations li {
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .chart-container {
+            height: 400px;
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 30px;
+        }
+
+        .disclaimer {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #ffcccc;
+            border-radius: var(--border-radius);
+            color: #721c24;
+        }
+
+        .dark-mode .disclaimer {
+            background: #721c24;
+            color: #ffcccc;
+        }
+
+        .disclaimer h4 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .disclaimer ul {
+            padding-left: 20px;
+        }
+
+        .disclaimer li {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .flash-messages {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1100;
+            max-width: 400px;
+        }
+
+        .flash-message {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: var(--border-radius);
+            background: var(--card-bg);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .alert-warning {
+            font-size: 1.1rem;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 992px) {
+            :root {
+                --sidebar-width: 250px;
+            }
+            
+            .welcome-section {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+            
+            .welcome-content {
+                text-align: left;
+            }
+            
+            .main-content.sidebar-open {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 80%;
+                left: -80%;
+            }
+            
+            .sidebar.open {
+                transform: translateX(80%);
+            }
+            
+            .toggle-sidebar.sidebar-open {
+                left: calc(80% + 20px);
+            }
+            
+            .welcome-section,
+            .symptom-input,
+            .result-section,
+            .profile-section,
+            .update-profile-section,
+            .update-medical-info-section,
+            .feedback-section,
+            .about-us-section {
+                padding: 20px;
+                margin: 15px auto;
+            }
+            
+            .result-item {
+                padding: 15px;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .sidebar {
+                width: 90%;
+                left: -90%;
+            }
+            
+            .sidebar.open {
+                transform: translateX(90%);
+            }
+            
+            .toggle-sidebar.sidebar-open {
+                left: calc(90% + 10px);
+            }
+            
+            .flash-messages {
+                max-width: 90%;
+                left: 5%;
+                right: 5%;
+                top: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Flash Messages -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Sidebar Toggle Button -->
+    <button class="toggle-sidebar" onclick="toggleSidebar()">☰</button>
+
+    <!-- Dark Mode Toggle Button -->
+    <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <h4>Medical Recommendation System</h4>
+        <ul>
+            <li><a href="#home" onclick="showSection('home')" class="active">🏠 Home</a></li>
+            <li><a href="#profile" onclick="showSection('profile')">👤 My Profile</a></li>
+            <li><a href="#update-profile" onclick="showSection('update-profile')">🔄 Update Profile</a></li>
+            <li><a href="#update-medical-info" onclick="showSection('update-medical-info')">📝 Update Medical Info</a></li>
+            <li><a href="#feedback" onclick="showSection('feedback')">📝 Feedback & Contact Us</a></li>
+            <li><a href="#about-us" onclick="showSection('about-us')">ℹ️ About Us</a></li>
+            <li><a href="{{ url_for('logout') }}">🚪 Logout</a></li>
+        </ul>
+        <img src="https://media.istockphoto.com/id/1477400397/vector/online-medical-services-website-and-mobile-applications-get-professional-medical.jpg?s=612x612&w=0&k=20&c=XADRJ4sjkIU5-HryAF23s2pZsEElI_Q0-uya0NnSTQE=" alt="Health Image">
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="main-content">
+        <!-- Home Section -->
+        <div id="home" class="section active home-section">
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <div class="welcome-content">
+                    <h1>Welcome, {{ user.username }}!</h1>
+                    <p>Have a nice day and don't forget to take care of your health!</p>
+                </div>
+                <img src="https://media.istockphoto.com/id/1487219262/vector/mobile-medicine-mhealth-online-doctor-online-medical-services-health-care-program-talk-to.jpg?s=612x612&w=0&k=20&c=xTAJes3VBIoYmLPc8eFSkMDaQk0lEtgng5HxZDN9U1w=" alt="Doctor and Patient Cartoon">
+            </div>
+
+            <!-- Symptom Input Section -->
+            <div class="symptom-input">
+                <form id="symptomForm" method="POST" action="{{ url_for('predict') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label class="form-label">Enter Symptoms</label>
+                        <input type="text" name="symptoms" class="form-control" placeholder="e.g., fever, headache, cough" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Predict Disease</button>
+                </form>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="text-center mt-3" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Analyzing symptoms...</p>
+            </div>
+
+            <!-- Prediction Result Section -->
+            <div id="predictionResult" class="result-section mt-3" style="display: none;">
+                <h3 class="text-center mb-4" style="font-size: 24px; font-weight: bold;">Prediction Result</h3>
+                
+                <!-- Disease -->
+                <div class="result-item">
+                    <h4>Disease</h4>
+                    <p><span id="disease">N/A</span></p>
+                </div>
+
+                <!-- Description -->
+                <div class="result-item">
+                    <h4>Description</h4>
+                    <p><span id="description">N/A</span></p>
+                </div>
+
+                <!-- Medicine & Dosage -->
+                <div class="result-item">
+                    <h4>Medicine & Dosage</h4>
+                    <p><span id="medicine">N/A</span></p>
+                    <p><span id="dosage">N/A</span></p>
+                </div>
+
+                <!-- Precautions -->
+                <div class="result-item">
+                    <h4>Precautions</h4>
+                    <p><span id="precautions">N/A</span></p>
+                </div>
+
+                <!-- Workout Recommendations -->
+                <div class="result-item">
+                    <h4>Recommended Workouts</h4>
+                    <div class="workout-recommendations">
+                        <div id="workoutList">No workout recommendations available</div>
+                    </div>
+                </div>
+
+                <!-- Recommendations -->
+                <div id="recommendations" class="result-item" style="display: none;">
+                    <h4>Important Recommendations</h4>
+                    <div id="recommendationsList"></div>
+                </div>
+
+                <!-- Alert for Medical History -->
+                <div id="medicalHistoryAlert" class="alert alert-warning" style="display: none;">
+                    ⚠️ This disease matches your medical history. Please consult a doctor immediately.
+                </div>
+
+                <!-- Chart Section -->
+                <div class="chart-container">
+                    <canvas id="predictionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Disclaimer Section -->
+            <div class="disclaimer mt-4">
+                <h4>Disclaimer:</h4>
+                <ul>
+                    <li>This Web App may not provide accurate predictions at all times. When in doubt, please consult a healthcare professional.</li>
+                    <li>You are requested to provide accurate information about your symptoms, allergies, and medical conditions for better predictions.</li>
+                    <li>Individuals with specific risk factors or concerns should consult with healthcare professionals for personalized advice and management.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div id="profile" class="section profile-section">
+            <h2>👤 My Profile</h2>
+            <div class="card p-3">
+                <p><strong>Username:</strong> {{ user.username }}</p>
+                <p><strong>Age:</strong> {{ user.age }}</p>
+                <p><strong>Gender:</strong> {{ user.gender }}</p>
+                <p><strong>Weight:</strong> {{ user.weight }} kg</p>
+                <p><strong>Height:</strong> {{ user.height }} cm</p>
+                <p><strong>Allergies:</strong> {{ user.allergies or 'None' }}</p>
+                <p><strong>Medical Conditions:</strong> {{ user.medical_conditions or 'None' }}</p>
+                <p><strong>Past Medications:</strong> {{ user.past_medications or 'None' }}</p>
+            </div>
+        </div>
+
+        <!-- Update Profile Section -->
+        <div id="update-profile" class="section update-profile-section">
+            <h2>🔄 Update Profile</h2>
+            <form id="profileForm" method="POST" action="{{ url_for('update_profile') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label class="form-label">Age</label>
+                    <input type="number" name="age" class="form-control" value="{{ user.age }}" min="1" max="120" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Gender</label>
+                    <select name="gender" class="form-control" required>
+                        <option value="male" {% if user.gender == 'male' %}selected{% endif %}>Male</option>
+                        <option value="female" {% if user.gender == 'female' %}selected{% endif %}>Female</option>
+                        <option value="other" {% if user.gender == 'other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Weight (kg)</label>
+                    <input type="number" name="weight" class="form-control" value="{{ user.weight }}" min="1" max="300" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Height (cm)</label>
+                    <input type="number" name="height" class="form-control" value="{{ user.height }}" min="50" max="250" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+        </div>
+
+        <!-- Update Medical Info Section -->
+        <div id="update-medical-info" class="section update-medical-info-section">
+            <h2>📝 Update Medical Info</h2>
+            <form id="medicalForm" method="POST" action="{{ url_for('update_medical_info') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label class="form-label">Allergies</label>
+                    <input type="text" name="allergies" class="form-control" value="{{ user.allergies }}" placeholder="Enter any allergies, separated by commas">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Medical Conditions</label>
+                    <input type="text" name="medical_conditions" class="form-control" value="{{ user.medical_conditions }}" placeholder="Enter any medical conditions, separated by commas">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Past Medications</label>
+                    <input type="text" name="past_medications" class="form-control" value="{{ user.past_medications }}" placeholder="Enter any past medications, separated by commas">
+                </div>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+        </div>
+
+        <!-- Feedback & Contact Us Section -->
+        <div id="feedback" class="section feedback-section">
+            <h2>📝 Feedback & Contact Us</h2>
+            <p>Your feedback is valuable to us! Please rate your experience and share your thoughts.</p>
+            
+            <!-- Star Rating -->
+            <div class="star-rating">
+                <span class="star" onclick="rate(1)">★</span>
+                <span class="star" onclick="rate(2)">★</span>
+                <span class="star" onclick="rate(3)">★</span>
+                <span class="star" onclick="rate(4)">★</span>
+                <span class="star" onclick="rate(5)">★</span>
+            </div>
+
+            <!-- Feedback Form -->
+            <form id="feedbackForm" class="mt-3">
+                <div class="mb-3">
+                    <label for="feedbackMessage" class="form-label">Your Feedback</label>
+                    <textarea class="form-control" id="feedbackMessage" rows="5" placeholder="Type your feedback here..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Feedback</button>
+            </form>
+        </div>
+
+        <!-- About Us Section -->
+        <div id="about-us" class="section about-us-section">
+            <h2>ℹ️ About Us</h2>
+            <p>We are a team of passionate individuals dedicated to creating a user-friendly and efficient application for disease prediction.</p>
+            
+            <h4>Our Team</h4>
+            <ul>
+                <li>👩‍💻 TEAM: Bhavana Satam<br>
+                             Harshini Hari <br>
+                             Piyush Tawde <br>
+                             Tejas Patharwat                 
+                </li>
+                <li>👨‍🏫 Guide: Asst.Prof.Pratyush Urade</li>
+                <li>🏫 Institution:NHITM ,Thane </li>
+            </ul>
+
+            <h4>Our Mission</h4>
+            <p>To provide accurate and reliable disease prediction tools to help users make informed health decisions.</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const toggleButton = document.querySelector('.toggle-sidebar');
+
+            sidebar.classList.toggle('open');
+            mainContent.classList.toggle('sidebar-open');
+            toggleButton.classList.toggle('sidebar-open');
+        }
+
+        // Toggle dark mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+            updateChartColors();
+        }
+
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Update chart colors when mode changes
+        function updateChartColors() {
+            if (window.predictionChart) {
+                const isDark = document.body.classList.contains('dark-mode');
+                window.predictionChart.options.plugins.legend.labels.color = isDark ? '#f8f9fa' : '#333';
+                window.predictionChart.update();
+            }
+        }
+
+        // Show selected section and highlight active link
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+
+            const links = document.querySelectorAll('.sidebar ul li a');
+            links.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${sectionId}`) {
+                    link.classList.add('active');
+                }
+            });
+
+            const toggleButton = document.querySelector('.toggle-sidebar');
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar.classList.contains('open')) {
+                toggleButton.style.left = 'calc(var(--sidebar-width) + 20px)';
+            } else {
+                toggleButton.style.left = '20px';
+            }
+        }
+
+        // Star Rating
+        let currentRating = 0;
+        const stars = document.querySelectorAll('.star-rating .star');
+
+        function rate(rating) {
+            currentRating = rating;
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.style.color = '#ffc107';
+                    star.classList.add('active');
+                } else {
+                    star.style.color = '#ccc';
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        // Submit Feedback
+        document.getElementById('feedbackForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const feedbackMessage = document.getElementById('feedbackMessage').value;
+            alert(`Thank you for your feedback!\nRating: ${currentRating}\nMessage: ${feedbackMessage}`);
+        });
+
+        // Handle symptom form submission
+        document.getElementById('symptomForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const form = this;
+            const symptomsInput = form.querySelector('input[name="symptoms"]');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const resultSection = document.getElementById('predictionResult');
+            
+            // Clear previous results and errors
+            resultSection.style.display = 'none';
+            document.getElementById('medicalHistoryAlert').style.display = 'none';
+            
+            // Validate input
+            const symptoms = symptomsInput.value.trim();
+            if (!symptoms) {
+                showFlashMessage('Please enter symptoms', 'warning');
+                symptomsInput.focus();
+                return;
+            }
+
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            loadingSpinner.style.display = 'block';
+            
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: {
+                        'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === "error") {
+                    showFlashMessage(data.message, 'danger');
+                    return;
+                }
+                
+                if (data.status === "info") {
+                    showFlashMessage(data.message, 'info');
+                    return;
+                }
+
+                // Populate results
+                populateResults(data.data);
+                
+            } catch (error) {
+                console.error("Error:", error);
+                showFlashMessage("Our system is busy. Please try again in a moment.", 'warning');
+            } finally {
+                submitBtn.disabled = false;
+                loadingSpinner.style.display = 'none';
+            }
+        });
+
+        function populateResults(data) {
+            if (!data) return;
+            
+            // Set basic information with probability
+            document.getElementById('disease').textContent = `${data.disease} (${data.probability}% match)`;
+            document.getElementById('description').textContent = data.description;
+            document.getElementById('medicine').textContent = data.medicine;
+            document.getElementById('dosage').textContent = data.dosage;
+            document.getElementById('precautions').textContent = data.precautions;
+
+            // Handle workout recommendations
+            const workoutList = document.getElementById('workoutList');
+            workoutList.innerHTML = '';
+            if (data.workout && data.workout.length > 0) {
+                const ul = document.createElement('ul');
+                data.workout.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    ul.appendChild(li);
+                });
+                workoutList.appendChild(ul);
+            } else {
+                workoutList.textContent = 'General physical activity recommended';
+            }
+
+            // Handle recommendations
+            const recommendationsDiv = document.getElementById('recommendations');
+            const recommendationsList = document.getElementById('recommendationsList');
+            recommendationsList.innerHTML = '';
+            
+            if (data.recommendations && data.recommendations.length > 0) {
+                data.recommendations.forEach(rec => {
+                    const p = document.createElement('p');
+                    p.className = 'recommendation-item';
+                    p.innerHTML = rec;
+                    recommendationsList.appendChild(p);
+                });
+                recommendationsDiv.style.display = 'block';
+            } else {
+                recommendationsDiv.style.display = 'none';
+            }
+
+            // Show medical history alert if needed
+            if (data.medical_history_match) {
+                document.getElementById('medicalHistoryAlert').style.display = 'block';
+            }
+
+            // Show the prediction result section
+            document.getElementById('predictionResult').style.display = 'block';
+
+            // Render chart
+            renderChart(data.probability, data.severity);
+        }
+
+        function renderChart(probability, severity) {
+            const ctx = document.getElementById('predictionChart').getContext('2d');
+            
+            if (window.predictionChart) {
+                window.predictionChart.destroy();
+            }
+            
+            const isDark = document.body.classList.contains('dark-mode');
+            const textColor = isDark ? '#f8f9fa' : '#333';
+            
+            window.predictionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [`Match Probability (${probability}%)`, `Severity (${severity}/10)`],
+                    datasets: [{
+                        data: [probability, severity],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(255, 99, 132, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: textColor,
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw}`;
+                                }
+                            },
+                            bodyFont: {
+                                size: 14
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function showFlashMessage(message, category) {
+            const flashContainer = document.querySelector('.flash-messages');
+            const flashMsg = document.createElement('div');
+            flashMsg.className = `flash-message alert alert-${category} animate__animated animate__fadeIn`;
+            flashMsg.textContent = message;
+            flashContainer.appendChild(flashMsg);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                flashMsg.classList.add('animate__fadeOut');
+                setTimeout(() => flashMsg.remove(), 500);
+            }, 5000);
+        }
+
+        // Handle profile form submission
+        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const form = this;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+                
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: {
+                        'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === "success") {
+                    showFlashMessage(data.message, 'success');
+                    // Reload the page to reflect changes
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showFlashMessage(data.message || 'Update failed', 'danger');
+                }
+            } catch (error) {
+                showFlashMessage('Network error. Please try again.', 'danger');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Changes';
+            }
+        });
+
+        // Handle medical info form submission
+        document.getElementById('medicalForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const form = this;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+                
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: {
+                        'X-CSRFToken': document.querySelector('input[name="csrf_token"]').value
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === "success") {
+                    showFlashMessage(data.message, 'success');
+                    // Reload the page to reflect changes
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showFlashMessage(data.message || 'Update failed', 'danger');
+                }
+            } catch (error) {
+                showFlashMessage('Network error. Please try again.', 'danger');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Save Changes';
+            }
+        });
+    </script>
+</body>
+</html>
